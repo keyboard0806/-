@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Pomodoro Final</title>
+
+<style>
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-family:-apple-system;
+  background:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee') center/cover;
+}
+
+.glass{
+  backdrop-filter:blur(20px);
+  background:rgba(255,255,255,0.1);
+  padding:25px;
+  border-radius:25px;
+  color:white;
+  text-align:center;
+  width:320px;
+}
+
+#time{
+  font-size:50px;
+  margin:20px 0;
+}
+
+button{
+  margin:5px;
+  padding:10px;
+  border:none;
+  border-radius:15px;
+  background:rgba(255,255,255,0.2);
+  color:white;
+}
+
+input{width:60px;text-align:center;}
+</style>
+</head>
+
+<body>
+
+<div class="glass">
+
+  <h2 id="mode">🔥 집중</h2>
+  <div id="time">25:00</div>
+
+  <button onclick="start()">▶</button>
+  <button onclick="pause()">⏸</button>
+  <button onclick="reset()">⏹</button>
+
+  <div>
+    집중 <input id="focus" value="25">분
+    휴식 <input id="break" value="5">분
+  </div>
+
+  <div style="margin-top:10px;">
+    <button onclick="toggleMusic()">🎧</button>
+  </div>
+
+</div>
+
+<audio id="lofi" loop>
+  <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_c8b2a1d7c2.mp3">
+</audio>
+
+<audio id="alarm">
+  <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_2d3f8b9fbb.mp3">
+</audio>
+
+<script>
+let timer = null;
+let endTime = 0;
+let isFocus = true;
+
+const music = document.getElementById("lofi");
+const alarm = document.getElementById("alarm");
+
+function start(){
+  if(timer) return;
+
+  let f = document.getElementById("focus").value * 60 * 1000;
+  let b = document.getElementById("break").value * 60 * 1000;
+
+  // 👉 끝나는 시간 기준으로 계산 (핵심)
+  endTime = Date.now() + (isFocus ? f : b);
+
+  music.play().catch(()=>{});
+
+  timer = setInterval(()=>{
+    let remaining = endTime - Date.now();
+
+    if(remaining <= 0){
+      alarm.play();
+
+      isFocus = !isFocus;
+      document.getElementById("mode").innerText =
+        isFocus ? "🔥 집중" : "😌 휴식";
+
+      endTime = Date.now() + (isFocus ? f : b);
+      return;
+    }
+
+    update(remaining);
+
+  }, 1000);
+}
+
+function update(ms){
+  let totalSec = Math.floor(ms / 1000);
+  let m = Math.floor(totalSec / 60);
+  let s = totalSec % 60;
+
+  document.getElementById("time").innerText =
+    `${m}:${s < 10 ? "0" : ""}${s}`;
+}
+
+function pause(){
+  clearInterval(timer);
+  timer = null;
+}
+
+function reset(){
+  clearInterval(timer);
+  timer = null;
+  isFocus = true;
+  document.getElementById("mode").innerText = "🔥 집중";
+  document.getElementById("time").innerText = "25:00";
+}
+
+function toggleMusic(){
+  music.paused ? music.play() : music.pause();
+}
+</script>
+
+</body>
+</html>
