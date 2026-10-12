@@ -1,0 +1,973 @@
+```html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>수학 교재 진단 및 맞춤 추천 시스템</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & Noto Sans KR -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      font-family: 'Noto Sans KR', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Subtle grid pattern background for edtech feel */
+    .bg-grid-pattern {
+      background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Animation transitions */
+    .fade-enter {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    .fade-enter-active {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 300ms ease-out, transform 300ms ease-out;
+    }
+
+    /* Selected state subtle ring glow */
+    .card-option {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-option:hover {
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 bg-grid-pattern flex flex-col justify-between selection:bg-blue-100 selection:text-blue-900">
+
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200">
+    <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="resetToStart()">
+        <div class="w-9 h-9 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold text-lg shadow-sm">
+          M
+        </div>
+        <div>
+          <span class="font-extrabold text-slate-900 tracking-tight text-lg">MathLab</span>
+          <span class="text-xs bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded-full ml-2 font-medium">교재 진단 엔진</span>
+        </div>
+      </div>
+      
+      <div id="header-actions" class="flex items-center space-x-3">
+        <span class="text-xs text-slate-500 font-medium hidden sm:inline-block">초·중·고 학년별 맞춤 데이터베이스</span>
+        <button onclick="resetToStart()" class="text-xs font-semibold text-slate-600 hover:text-blue-600 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-md transition-colors">
+          처음으로
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8 sm:py-12 w-full flex-grow">
+
+    <!-- WELCOME / START SCREEN -->
+    <section id="screen-welcome" class="bg-white rounded-2xl border border-slate-200 shadow-xl p-6 sm:p-10 text-center fade-enter fade-enter-active">
+      <div class="inline-flex items-center space-x-2 bg-blue-50 text-blue-700 font-semibold text-xs px-3.5 py-1.5 rounded-full mb-6 border border-blue-100">
+        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+        <span>2026 개정 교육과정 반영 · 7단계 정밀 성향 진단</span>
+      </div>
+
+      <h1 class="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight mb-4">
+        나에게 꼭 맞는 완벽한<br class="hidden sm:inline"> <span class="text-blue-600">수학 교재</span>를 찾아드립니다
+      </h1>
+
+      <p class="text-slate-600 text-sm sm:text-base max-w-xl mx-auto mb-8 leading-relaxed">
+        초등학교 4학년부터 고등학교 3학년까지.<br class="hidden sm:inline">
+        학습 목적, 현재 성적, 공부 스타일 등 7가지 항목을 바탕으로 최적의 메인 교재와 서브 교재 조합을 분석해 드립니다.
+      </p>
+
+      <!-- Key Features Badge Strip -->
+      <div class="grid grid-cols-3 gap-3 max-w-lg mx-auto mb-10 text-left">
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+          <div class="font-bold text-xs text-slate-800 mb-1 flex items-center">
+            <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-blue-600 mr-1.5"></i> 22개 대표 라인업
+          </div>
+          <p class="text-[11px] text-slate-500">디딤돌, 쎈, 마플, 개념원리 등 검증된 교재 DB</p>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+          <div class="font-bold text-xs text-slate-800 mb-1 flex items-center">
+            <i data-lucide="target" class="w-3.5 h-3.5 text-blue-600 mr-1.5"></i> 메타인지 반영
+          </div>
+          <p class="text-[11px] text-slate-500">시간부족, 취약단원, 약점별 세밀 매핑</p>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+          <div class="font-bold text-xs text-slate-800 mb-1 flex items-center">
+            <i data-lucide="book-open" class="w-3.5 h-3.5 text-blue-600 mr-1.5"></i> 로드맵 제시
+          </div>
+          <p class="text-[11px] text-slate-500">교재 선택 이유 & 4단계 완독 가이드 제공</p>
+        </div>
+      </div>
+
+      <button onclick="startDiagnostic()" class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-base px-8 py-4 rounded-xl shadow-lg shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+        <span>맞춤 진단 시작하기 (약 1분)</span>
+        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+      </button>
+    </section>
+
+    <!-- DIAGNOSTIC QUESTIONNAIRE CONTAINER (HIDDEN INITIALLY) -->
+    <section id="screen-diagnostic" class="hidden">
+      <!-- Progress Header -->
+      <div class="mb-6 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between text-xs font-semibold text-slate-600 mb-2">
+          <span id="step-indicator" class="text-blue-600 font-bold">Step 1 of 7</span>
+          <span id="step-category" class="bg-slate-100 px-2.5 py-1 rounded-md text-slate-700">기본 정보 및 학년</span>
+        </div>
+        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+          <div id="progress-bar" class="bg-blue-600 h-full w-[14%] transition-all duration-300 ease-out"></div>
+        </div>
+      </div>
+
+      <!-- Question Card Frame -->
+      <div id="question-card" class="bg-white rounded-2xl border border-slate-200 shadow-xl p-6 sm:p-8 fade-enter fade-enter-active">
+        <h2 id="q-title" class="text-xl sm:text-2xl font-bold text-slate-900 mb-2 leading-snug">
+          질문 제목이 들어갑니다.
+        </h2>
+        <p id="q-subtitle" class="text-slate-500 text-sm mb-6">
+          보조 설명이 들어갑니다.
+        </p>
+
+        <!-- Options Grid Container -->
+        <div id="q-options" class="space-y-3">
+          <!-- Dynamic Buttons Options Generated via JS -->
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex items-center justify-between mt-8 pt-6 border-t border-slate-100">
+          <button id="btn-prev" onclick="handlePrevStep()" class="inline-flex items-center space-x-1.5 text-slate-500 hover:text-slate-800 font-semibold text-sm px-4 py-2 rounded-lg hover:bg-slate-100 transition-colors disabled:opacity-30 disabled:hover:bg-transparent">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            <span>이전</span>
+          </button>
+
+          <span class="text-xs text-slate-400">솔직하게 답변해 주실수록 추천 정밀도가 올라갑니다</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOADING / ANALYZING STATE -->
+    <section id="screen-loading" class="hidden bg-white rounded-2xl border border-slate-200 shadow-xl p-12 text-center fade-enter fade-enter-active">
+      <div class="inline-block p-4 bg-blue-50 text-blue-600 rounded-2xl mb-6 animate-bounce">
+        <i data-lucide="calculator" class="w-10 h-10"></i>
+      </div>
+      <h2 class="text-2xl font-bold text-slate-900 mb-2">학생님의 학습 성향을 분석 중입니다</h2>
+      <p class="text-slate-500 text-sm max-w-md mx-auto mb-6">
+        선택하신 7가지 조건과 초·중·고 수학 베스트셀러 DB를 정밀 대조하고 있습니다...
+      </p>
+      
+      <!-- Animated step check sequence -->
+      <div class="max-w-xs mx-auto space-y-2 text-left text-xs text-slate-600">
+        <div class="flex items-center space-x-2 text-blue-600 font-medium">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+          <span>학년 및 목표 난이도 매핑 완료</span>
+        </div>
+        <div class="flex items-center space-x-2 text-blue-600 font-medium">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+          <span>취약점 및 해설 선호 유형 분석 완료</span>
+        </div>
+        <div class="flex items-center space-x-2 text-blue-600 font-medium animate-pulse">
+          <i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i>
+          <span>최적의 메인 교재 + 서브 교재 매칭 중</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESULT PRESENTATION SCREEN -->
+    <section id="screen-result" class="hidden fade-enter fade-enter-active space-y-6">
+      
+      <!-- Top Diagnostic Summary Banner -->
+      <div class="bg-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 opacity-10 text-white pointer-events-none">
+          <i data-lucide="award" class="w-64 h-64"></i>
+        </div>
+        
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <span class="inline-flex items-center space-x-1.5 bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs px-3 py-1 rounded-full font-medium">
+            <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
+            <span>진단 분석 완료</span>
+          </span>
+          <span id="result-timestamp" class="text-xs text-slate-400">2026.10.12 진단</span>
+        </div>
+
+        <h2 id="result-headline" class="text-xl sm:text-2xl font-bold mb-3 leading-snug">
+          [중등 2학년 / 내신 대비] 맞춤형 분석 결과
+        </h2>
+        <p id="result-summary-text" class="text-slate-300 text-sm leading-relaxed max-w-2xl">
+          기초 개념은 형성되어 있으나, 시험 시 시간 부족과 문제 응용에서 실수가 발생하는 유형입니다. 유형 다회독 및 문제풀이 속도 향상을 위한 조합을 추천합니다.
+        </p>
+
+        <!-- Student Tag Chips -->
+        <div id="result-tags" class="flex flex-wrap gap-2 mt-5 pt-5 border-t border-slate-800">
+          <!-- Dynamic Tags -->
+        </div>
+      </div>
+
+      <!-- Main vs Sub Book Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- MAIN BOOK CARD -->
+        <div class="bg-white rounded-2xl border-2 border-blue-600 shadow-xl p-6 relative flex flex-col justify-between">
+          <div class="absolute -top-3.5 left-6 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md flex items-center space-x-1">
+            <i data-lucide="star" class="w-3 h-3 fill-current"></i>
+            <span>메인 추천 교재</span>
+          </div>
+
+          <div>
+            <div class="mt-2 mb-4">
+              <span id="main-book-badge" class="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-100">
+                표준 유형서 / 내신 다회독
+              </span>
+              <h3 id="main-book-title" class="text-2xl font-extrabold text-slate-900 mt-2">
+                쎈 (Cen) 중등 수학 2-1
+              </h3>
+            </div>
+
+            <div class="space-y-3 mb-6 text-sm">
+              <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                <span class="block text-xs font-bold text-slate-500 mb-0.5">추천 이유</span>
+                <p id="main-book-reason" class="text-slate-700 text-xs leading-relaxed">
+                  모든 내신 기출 유형이 세분화되어 있어, 문제 풀이 속도를 끌어올리고 시험 실전을 완벽 대비하기에 가장 적합합니다.
+                </p>
+              </div>
+
+              <div class="flex items-center justify-between text-xs text-slate-600 px-1">
+                <span>권장 학습 기간:</span>
+                <span id="main-book-duration" class="font-bold text-slate-800">8주 ~ 10주 완독</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-slate-400">학습 중요도: ★★★★★</span>
+            <span id="main-book-level" class="text-xs font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-md">난이도: 중상</span>
+          </div>
+        </div>
+
+        <!-- SUB BOOK CARD -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-lg p-6 relative flex flex-col justify-between">
+          <div class="absolute -top-3.5 left-6 bg-slate-800 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md flex items-center space-x-1">
+            <i data-lucide="plus-circle" class="w-3 h-3"></i>
+            <span>서브 교재 / 보완 전략</span>
+          </div>
+
+          <div>
+            <div class="mt-2 mb-4">
+              <span id="sub-book-badge" class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100">
+                개념 보충 및 오답노트
+              </span>
+              <h3 id="sub-book-title" class="text-2xl font-extrabold text-slate-900 mt-2">
+                개념원리 중등 수학 2-1
+              </h3>
+            </div>
+
+            <div class="space-y-3 mb-6 text-sm">
+              <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                <span class="block text-xs font-bold text-slate-500 mb-0.5">병행 및 활용 팁</span>
+                <p id="sub-book-reason" class="text-slate-700 text-xs leading-relaxed">
+                  메인 교재를 풀다가 특정 단원의 개념이 막힐 때 발췌하여 읽는 용도로 활용하면 최상의 효과를 얻을 수 있습니다.
+                </p>
+              </div>
+
+              <div class="flex items-center justify-between text-xs text-slate-600 px-1">
+                <span>추천 활용법:</span>
+                <span id="sub-book-usage" class="font-bold text-slate-800">필요 단원 발췌 독서</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-slate-400">보완 역할: 개념 단단히 하기</span>
+            <span id="sub-book-level" class="text-xs font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-md">난이도: 기본</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 4-STEP STUDY ROADMAP -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-xl p-6 sm:p-8">
+        <div class="flex items-center space-x-2 mb-6">
+          <div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
+            <i data-lucide="map" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">맞춤 4단계 완독 로드맵</h3>
+            <p class="text-xs text-slate-500">추천된 교재를 밀리지 않고 끝까지 마스터하는 실전 가이드</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 relative">
+            <span class="text-xs font-bold text-blue-600 block mb-1">STEP 01</span>
+            <h4 class="font-bold text-slate-800 text-sm mb-1">분량 정하기</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">하루 3~4쪽 정해진 분량을 지정 시간에 풀어 규칙적인 학습 습관 형성</p>
+          </div>
+
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 relative">
+            <span class="text-xs font-bold text-blue-600 block mb-1">STEP 02</span>
+            <h4 class="font-bold text-slate-800 text-sm mb-1">1차 채점 방식</h4>
+            <p id="roadmap-step2" class="text-xs text-slate-600 leading-relaxed">틀린 문제는 해설지를 보지 않고 개념을 재확인 후 2차 스스로 풀이</p>
+          </div>
+
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 relative">
+            <span class="text-xs font-bold text-blue-600 block mb-1">STEP 03</span>
+            <h4 class="font-bold text-slate-800 text-sm mb-1">답안지 활용</h4>
+            <p id="roadmap-step3" class="text-xs text-slate-600 leading-relaxed">선택하신 빠른 정답 방식으로 채점 효율성을 극대화</p>
+          </div>
+
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 relative">
+            <span class="text-xs font-bold text-blue-600 block mb-1">STEP 04</span>
+            <h4 class="font-bold text-slate-800 text-sm mb-1">복습 누적</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">주말에는 한 주 동안 틀렸던 오답 문제만 모아서 재풀이 진행</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Action Controls -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-md">
+        <button onclick="resetToStart()" class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 text-slate-700 bg-slate-100 hover:bg-slate-200 font-bold text-sm px-6 py-3 rounded-xl transition-colors">
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+          <span>다시 진단하기</span>
+        </button>
+
+        <div class="flex items-center space-x-3 w-full sm:w-auto">
+          <button onclick="copyResults()" class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-slate-900 hover:bg-black text-white font-bold text-sm px-6 py-3 rounded-xl transition-colors shadow-sm">
+            <i data-lucide="copy" class="w-4 h-4"></i>
+            <span>진단 결과 복사하기</span>
+          </button>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-500">
+    <div class="max-w-4xl mx-auto px-4 space-y-2">
+      <p class="font-semibold text-slate-600">MathLab 초·중·고 수학 맞춤 교재 진단 엔진</p>
+      <p>본 진단 알고리즘은 각 출판사의 베스트셀러 교재 공식 정보 및 난이도 체계를 바탕으로 구성되었습니다.</p>
+      <p class="text-slate-400">© 2026 MathLab Engine. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    // -------------------------------------------------------------
+    // 1. DIAGNOSTIC DATA & STATE MANAGEMENT
+    // -------------------------------------------------------------
+    
+    // User Answers Object
+    let userAnswers = {
+      level: '',        // 'elem', 'mid', 'high'
+      gradeStr: '',     // e.g., '초등 5학년'
+      objective: '',    // 'preview', 'review', 'vacation', 'weakness'
+      confidence: '',   // 'low', 'mid_low', 'mid', 'high'
+      bottleneck: '',   // 'concept', 'mistake', 'speed', 'application'
+      style: '',        // 'academy', 'self', 'volume'
+      volume: '',       // 'thin', 'standard', 'thick'
+      answerKey: ''     // 'detailed', 'fast', 'analysis'
+    };
+
+    let currentStep = 1;
+    const TOTAL_STEPS = 7;
+
+    // -------------------------------------------------------------
+    // 2. QUESTIONNAIRE CONFIGURATION (7-STEP FLOW)
+    // -------------------------------------------------------------
+    const questions = [
+      {
+        step: 1,
+        category: "학교 및 학년",
+        title: "현재 학년이 어떻게 되나요?",
+        subtitle: "학생의 정확한 진도를 확인하기 위해 학년을 선택해 주세요.",
+        options: [
+          { label: "초등학교 4학년", value: "elem-4", level: "elem" },
+          { label: "초등학교 5학년", value: "elem-5", level: "elem" },
+          { label: "초등학교 6학년", value: "elem-6", level: "elem" },
+          { label: "중학교 1학년", value: "mid-1", level: "mid" },
+          { label: "중학교 2학년", value: "mid-2", level: "mid" },
+          { label: "중학교 3학년", value: "mid-3", level: "mid" },
+          { label: "고등학교 1학년", value: "high-1", level: "high" },
+          { label: "고등학교 2학년", value: "high-2", level: "high" },
+          { label: "고등학교 3학년", value: "high-3", level: "high" }
+        ]
+      },
+      {
+        step: 2,
+        category: "학습 목적",
+        title: "이번 교재를 공부하는 가장 큰 목적은 무엇인가요?",
+        subtitle: "목표에 따라 가장 효과적인 교재 구성이 달라집니다.",
+        options: [
+          { label: "다음 학기/단원 미리 공부하기 (선행·예습)", value: "preview", desc: "개념 중심으로 부담 없이 미리 진도를 나갑니다." },
+          { label: "학교 수업 복습 및 시험 완벽 대비 (복습·내신)", value: "review", desc: "학교 진도에 맞춰 시험 출제 유형을 연습합니다." },
+          { label: "방학 단기 완성을 위한 주요 개념 정리", value: "vacation", desc: "짧은 기간 동안 핵심 단원을 빠르고 밀도 있게 끝냅니다." },
+          { label: "자꾸 틀리는 취약 단원 집중 보완", value: "weakness", desc: "구멍 난 특정 단원이나 연산을 꼼꼼히 채웁니다." }
+        ]
+      },
+      {
+        step: 3,
+        category: "현재 실력 및 성적",
+        title: "최근 수학 과목에 대한 자신감이나 성적은 어느 정도인가요?",
+        subtitle: "학생의 성취도에 딱 맞는 난이도를 매핑해 드립니다.",
+        options: [
+          { label: "기초 부족 (용어나 개념부터 잘 이해가 안 돼요)", value: "low", desc: "기본 개념을 친절하게 다져주는 교재가 필요해요." },
+          { label: "중하위권 (개념은 아는데 쉬운 문제도 가끔 틀려요)", value: "mid_low", desc: "기초 문제 풀이 양을 늘려서 실수를 줄여야 해요." },
+          { label: "중위권 (기본 문제는 다 맞히는데 응용에서 막혀요)", value: "mid", desc: "표준 유형 다회독과 응용 문제 적응력이 필요해요." },
+          { label: "상위권·최상위권 (85~90점 이상, 고난도/킬러 대비)", value: "high", desc: "내신 만점 및 심화·사고력 문제를 대비합니다." }
+        ]
+      },
+      {
+        step: 4,
+        category: "학습 걸림돌 분석",
+        title: "수학 문제를 풀 때 느끼는 가장 큰 어려움은 무엇인가요?",
+        subtitle: "약점을 정확히 파악하여 보완 교재를 매칭합니다.",
+        options: [
+          { label: "개념 이해 부족 (조금만 문제가 변형되어도 막힘)", value: "concept" },
+          { label: "계산·어휘 실수 (아는 문제인데 실수를 자주 함)", value: "mistake" },
+          { label: "문제 풀이 속도 (시간이 부족해서 다 못 믊)", value: "speed" },
+          { label: "고난도 응용력 부족 (어려운 문항만 나오면 멈춤)", value: "application" }
+        ]
+      },
+      {
+        step: 5,
+        category: "공부 스타일",
+        title: "선호하는 공부 방식이나 환경은 어떠한가요?",
+        subtitle: "해설의 친절도와 문제 배치 방식을 결정합니다.",
+        options: [
+          { label: "학원이나 인강 수업과 병행하며 풀고 싶어요", value: "academy" },
+          { label: "친절한 해설을 보고 혼자 독학(자습)하고 싶어요", value: "self" },
+          { label: "많은 문제를 반복해서 풀며 몸에 익히고 싶어요", value: "volume" }
+        ]
+      },
+      {
+        step: 6,
+        category: "교재 분량 선호",
+        title: "선호하는 교재의 두께와 문제 양은 어느 정도인가요?",
+        subtitle: "완독 성공률을 높이기 위한 교재 스타일을 선택해 주세요.",
+        options: [
+          { label: "얇고 핵심 위주 (빠르게 한 권 완독해서 성취감 느끼기)", value: "thin" },
+          { label: "표준 분량 (개념 절반 + 유형 문제 절반의 무난한 구성)", value: "standard" },
+          { label: "문제량이 풍부한 책 (유형별 문제가 빡빡하게 들어간 문제집)", value: "thick" }
+        ]
+      },
+      {
+        step: 7,
+        category: "해설지 선호",
+        title: "답안지(해설지)에서 가장 중요하게 보는 요소는 무엇인가요?",
+        subtitle: "채점 및 오답 학습 방식에 맞춘 보완 가이드를 제공합니다.",
+        options: [
+          { label: "친절한 줄글 해설 및 다양한 풀이법 제공", value: "detailed" },
+          { label: "빠르게 채점할 수 있는 간결한 빠른 정답", value: "fast" },
+          { label: "출제 의도 및 킬러 문항에 대한 핵심 분석 팁", value: "analysis" }
+        ]
+      }
+    ];
+
+    // -------------------------------------------------------------
+    // 3. TEXTBOOK DATABASE MAPPING LOGIC
+    // -------------------------------------------------------------
+    function calculateRecommendation(ans) {
+      let mainBook = "";
+      let mainReason = "";
+      let mainBadge = "";
+      let mainDuration = "8주 ~ 10주 완독";
+      let mainLevel = "보통";
+
+      let subBook = "";
+      let subReason = "";
+      let subBadge = "";
+      let subUsage = "";
+      let subLevel = "기초/개념";
+
+      const isElem = ans.level === 'elem';
+      const isMid = ans.level === 'mid';
+      const isHigh = ans.level === 'high';
+
+      // --- ELEMENTARY (초등) MAPPING ---
+      if (isElem) {
+        if (ans.confidence === 'high') {
+          if (ans.volume === 'thick' || ans.bottleneck === 'application') {
+            mainBook = "최상위 쎈";
+            mainBadge = "최고난도 유형 집중";
+            mainReason = "풍부한 고난도 문제 풀이를 통해 최고득점 및 상위권 감각을 극대화하기에 최적입니다.";
+            mainLevel = "최고난도";
+
+            subBook = "디딤돌 최상위수학 S";
+            subBadge = "친절한 심화 개념";
+            subReason = "막히는 고난도 유형이 있을 때 친절한 문제 풀이틀을 참고하는 용도로 병행하세요.";
+          } else {
+            mainBook = "디딤돌 최상위수학";
+            mainBadge = "전통의 사고력/심화";
+            mainReason = "단원평가 만점 및 사고력·문장제 문제 정복을 위한 대표 최고난도 심화서입니다.";
+            mainLevel = "최고난도";
+
+            subBook = "쎈 초등 (기본)";
+            subBadge = "유형 다회독";
+            subReason = "심화 문제 풀이 전, 빠짐없는 기본 유형 체크용으로 함께 풀면 좋습니다.";
+          }
+        } else if (ans.confidence === 'mid') {
+          if (ans.objective === 'preview' || ans.volume === 'thin') {
+            mainBook = "디딤돌 최상위수학 S";
+            mainBadge = "상위권 입문서";
+            mainReason = "기본 개념에서 심화 문제로 넘어가는 다리 역할을 하여 부담 없이 상위권으로 도약할 수 있습니다.";
+            mainLevel = "응용~심화";
+
+            subBook = "개념+유형 (파워)";
+            subBadge = "응용 유형 강화";
+            subReason = "학교 단원평가 고득점을 위해 유형 풀이량을 함께 보충해 주세요.";
+          } else {
+            mainBook = "쎈 초등 (기본)";
+            mainBadge = "대표 유형서";
+            mainReason = "초등 수학의 모든 문제 유형이 담겨 있어 학교 시험 완벽 대비 및 다회독에 가장 효과적입니다.";
+            mainLevel = "유형~응용";
+
+            subBook = "라이트쎈 초등";
+            subBadge = "오답 보완용";
+            subReason = "자주 틀리는 단원만 골라 가볍게 복습할 때 서브로 활용해 보세요.";
+          }
+        } else if (ans.confidence === 'mid_low') {
+          if (ans.volume === 'thick') {
+            mainBook = "라이트쎈 초등";
+            mainBadge = "부담 적은 유형서";
+            mainReason = "쎈보다 난이도가 완화된 유형서로, 실수를 줄이고 계산 적응력을 기르기에 제격입니다.";
+            mainLevel = "기본~유형";
+
+            subBook = "개념+유형 (라이트)";
+            subBadge = "개념 정리";
+            subReason = "개념이 흔들릴 때 쉽고 얇은 개념북 부분을 복습용으로 참고하세요.";
+          } else {
+            mainBook = "개념+유형 (파워)";
+            mainBadge = "개념+응용 세트";
+            mainReason = "개념도 잡고 응용 문제 풀이까지 자연스럽게 연결할 수 있는 탄탄한 구성입니다.";
+            mainLevel = "유형~응용";
+
+            subBook = "디딤돌 초등수학 기본";
+            subBadge = "교과서 개념";
+            subReason = "학교 진도를 나가기 전 쉬운 개념 다지기용으로 병행하기 좋습니다.";
+          }
+        } else { // low
+          if (ans.volume === 'thin') {
+            mainBook = "개념+유형 (라이트)";
+            mainBadge = "쉬운 개념입문";
+            mainReason = "얇고 친절한 구성으로 수학에 대한 부담감을 없애고 예습하기에 가장 편안한 교재입니다.";
+            mainLevel = "기초~기본";
+
+            subBook = "디딤돌 초등수학 기본";
+            subBadge = "기초 반복";
+            subReason = "교과서 핵심 문제들을 천천히 따라 풀며 자신감을 키울 수 있습니다.";
+          } else {
+            mainBook = "디딤돌 초등수학 기본";
+            mainBadge = "교과서 표준 개념서";
+            mainReason = "그림과 친절한 설명으로 교과서 원리를 쉬운 난이도부터 차근차근 익힐 수 있습니다.";
+            mainLevel = "기초~기본";
+
+            subBook = "개념+유형 (라이트)";
+            subBadge = "유형 연습";
+            subReason = "기본 개념을 익힌 후 가벼운 문제 풀이용으로 함께 풀어보세요.";
+          }
+        }
+      }
+
+      // --- MIDDLE (중등) MAPPING ---
+      else if (isMid) {
+        if (ans.confidence === 'high') {
+          if (ans.bottleneck === 'application' || ans.volume === 'thick') {
+            mainBook = "블랙라벨 중등 수학";
+            mainBadge = "최고난도 킬러 대비";
+            mainReason = "내신 만점 및 특목·자사고를 목표로 하는 학생을 위한 고난도 변형 문항 집약서입니다.";
+            mainLevel = "최고난도";
+
+            subBook = "일품 중등 수학";
+            subBadge = "준심화 다져넣기";
+            subReason = "블랙라벨 풀이 전 준심화 문제 유형을 빠르게 훑어보는 용도로 활용하세요.";
+          } else {
+            mainBook = "일품 중등 수학";
+            mainBadge = "내신 고득점 준심화";
+            mainReason = "쎈을 마친 후 내신 90점 이상 및 까다로운 변형 문항을 확실히 잡을 수 있는 베스트셀러입니다.";
+            mainLevel = "응용~준심화";
+
+            subBook = "쎈 (Cen)";
+            subBadge = "유형 점검";
+            subReason = "B/C단계 문제 중 틀렸던 문제만 골라 빠르게 재점검하는 서브로 활용하세요.";
+          }
+        } else if (ans.confidence === 'mid') {
+          if (ans.style === 'volume' || ans.volume === 'thick') {
+            mainBook = "쎈 (Cen) 중등 수학";
+            mainBadge = "대한민국 대표 유형서";
+            mainReason = "모든 내신 기출 유형이 다 들어있어 양치기와 실전 대비를 한 번에 끝낼 수 있습니다.";
+            mainLevel = "유형~응용";
+
+            subBook = "개념원리 RPM";
+            subBadge = "오답 다회독";
+            subReason = "부족한 유형만 유사 문항으로 반복 연습할 때 보충용으로 사용하세요.";
+          } else {
+            mainBook = "개념원리 RPM";
+            mainBadge = "표준 유형 다회독";
+            mainReason = "부담스럽지 않은 문제 구성으로 유형 적응력을 높이고 내신 기본기를 단단하게 다집니다.";
+            mainLevel = "기본~유형";
+
+            subBook = "개념원리";
+            subBadge = "개념 발췌독";
+            subReason = "유형 문제를 풀다가 막히는 원리가 나올 때 개념 설명 부분을 참고하세요.";
+          }
+        } else if (ans.confidence === 'mid_low') {
+          if (ans.objective === 'preview' || ans.style === 'self') {
+            mainBook = "개념+유형 중등 수학";
+            mainBadge = "개념+유형 일체형";
+            mainReason = "친절한 진도교재와 라이트 유형북이 하나로 결합되어 자습 및 선행에 최적입니다.";
+            mainLevel = "개념~유형";
+
+            subBook = "라이트쎈";
+            subBadge = "쉬운 유형 보완";
+            subReason = "학교 내신 시험 전 쉬운 문제 위주로 한 번 더 복습하세요.";
+          } else {
+            mainBook = "라이트쎈 중등 수학";
+            mainBadge = "쉬운 대표 유형서";
+            mainReason = "쎈(Cen)의 어려운 난이도를 낮추어 쉬운 A·B단계 위주로 유연하게 유형을 다질 수 있습니다.";
+            mainLevel = "기본~유형";
+
+            subBook = "개념원리";
+            subBadge = "기초 독학";
+            subReason = "혼자서 개념을 한 번 더 읽어볼 수 있는 서브 기본서로 추천합니다.";
+          }
+        } else { // low
+          mainBook = "개념원리 중등 수학";
+          mainBadge = "표준 개념 독학서";
+          mainReason = "수학의 원리를 줄글과 예제로 친절하게 풀어주어 기초 개념을 확립하기 가장 좋습니다.";
+          mainLevel = "개념~기본";
+
+          subBook = "개념+유형 (라이트)";
+          subBadge = "가벼운 진도";
+          subReason = "개념원리를 다 읽은 후 기초 문제만 가볍게 풀어보는 용도로 병행하세요.";
+        }
+      }
+
+      // --- HIGH SCHOOL (고등) MAPPING ---
+      else {
+        if (ans.confidence === 'high') {
+          if (ans.volume === 'thick' || ans.bottleneck === 'application') {
+            mainBook = "블랙라벨 고등 수학";
+            mainBadge = "내신 1등급/킬러 정복";
+            mainReason = "변형 킬러 문항과 모의고사 고난도 기출이 담겨 있어 내신 1등급을 결정짓는 필수 심화서입니다.";
+            mainLevel = "최고난도";
+
+            subBook = "마플시너지";
+            subBadge = "유형 다회독 N제";
+            subReason = "고난도 문제를 풀기 전 양질의 기출 유형을 빠르게 선회하는 기반으로 삼으세요.";
+          } else {
+            mainBook = "일품 고등 수학";
+            mainBadge = "내신 상위권 변별력";
+            mainReason = "고등학교 내신 시험에서 상위권 등급을 갈라놓는 핵심 준심화 문항 대비에 강합니다.";
+            mainLevel = "응용~준심화";
+
+            subBook = "쎈 (Cen)";
+            subBadge = "유형 점검";
+            subReason = "기본 유형에서 감을 잃지 않도록 쎈 C단계 위주로 함께 체크하세요.";
+          }
+        } else if (ans.confidence === 'mid') {
+          if (ans.style === 'volume' || ans.volume === 'thick') {
+            mainBook = "마플시너지 고등 수학";
+            mainBadge = "내신 N회독 유형 폭탄";
+            mainReason = "내신 기출, 서술형, 모의고사 기출까지 압도적 문제량으로 2~3등급 도약에 최고입니다.";
+            mainLevel = "유형~응용";
+
+            subBook = "개념원리";
+            subBadge = "원리 재확인";
+            subReason = "문제량이 많아 막힐 때 공식 증명과 기본 개념을 찾아보는 바이블 역할입니다.";
+          } else {
+            mainBook = "쎈 (Cen) 고등 수학";
+            mainBadge = "고등 내신 필독서";
+            mainReason = "전국 고교 내신 기출 유형이 빈틈없이 다루어져 있어 내신 대비에 가장 안정적입니다.";
+            mainLevel = "유형~응용";
+
+            subBook = "개념원리 RPM";
+            subBadge = "기초 회독";
+            subReason = "쎈 문제 풀이가 살짝 버거울 때 기초 B단계 문제 위주로 서브 연습하세요.";
+          }
+        } else if (ans.confidence === 'mid_low') {
+          if (ans.objective === 'preview' || ans.volume === 'thin') {
+            mainBook = "개념+유형 고등 수학";
+            mainBadge = "빠른 진도/개념 정리";
+            mainReason = "고등 수학의 방대한 진도를 부담 없이 빠르게 끝내고 개념틀을 완성하기 좋습니다.";
+            mainLevel = "개념~유형";
+
+            subBook = "개념원리 RPM";
+            subBadge = "기본 유형";
+            subReason = "진도를 나간 후 기본 유형 유지를 위한 연습 문제집으로 활용하세요.";
+          } else {
+            mainBook = "개념원리 RPM 고등 수학";
+            mainBadge = "고등 기본 유형서";
+            mainReason = "개념원리와 100% 연계되어 고등 내신 기본 문제들을 실수 없이 다지기 적합합니다.";
+            mainLevel = "기본~유형";
+
+            subBook = "개념원리";
+            subBadge = "개념 독학";
+            subReason = "공식 도출 과정이나 설명이 필요할 때 필독 개념서로 병행하세요.";
+          }
+        } else { // low
+          mainBook = "개념원리 고등 수학";
+          mainBadge = "고등 수학 독학 개념서";
+          mainReason = "고등학교 수학의 복잡한 원리와 수식을 독학으로도 쉽게 이해할 수 있도록 가장 상세히 풀이되어 있습니다.";
+          mainLevel = "개념~기본";
+
+          subBook = "개념+유형";
+          subBadge = "유형 맛보기";
+          subReason = "개념원리로 단원을 끝낸 후 쉬운 유형 문제를 맛보는 용도로 병행해 보세요.";
+        }
+      }
+
+      return {
+        mainBook, mainReason, mainBadge, mainDuration, mainLevel,
+        subBook, subReason, subBadge, subUsage, subLevel
+      };
+    }
+
+    // -------------------------------------------------------------
+    // 4. UI SCREEN TRANSITIONS & INTERACTION LOGIC
+    // -------------------------------------------------------------
+    
+    function startDiagnostic() {
+      document.getElementById('screen-welcome').classList.add('hidden');
+      document.getElementById('screen-diagnostic').classList.remove('hidden');
+      currentStep = 1;
+      renderQuestion();
+    }
+
+    function resetToStart() {
+      currentStep = 1;
+      userAnswers = { level: '', gradeStr: '', objective: '', confidence: '', bottleneck: '', style: '', volume: '', answerKey: '' };
+      document.getElementById('screen-result').classList.add('hidden');
+      document.getElementById('screen-diagnostic').classList.add('hidden');
+      document.getElementById('screen-loading').classList.add('hidden');
+      document.getElementById('screen-welcome').classList.remove('hidden');
+    }
+
+    function renderQuestion() {
+      const q = questions[currentStep - 1];
+      
+      // Update Step Header
+      document.getElementById('step-indicator').innerText = `Step ${currentStep} of ${TOTAL_STEPS}`;
+      document.getElementById('step-category').innerText = q.category;
+      
+      // Update Progress Bar %
+      const progressPercent = Math.round((currentStep / TOTAL_STEPS) * 100);
+      document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+      // Update Question Titles
+      document.getElementById('q-title').innerText = q.title;
+      document.getElementById('q-subtitle').innerText = q.subtitle;
+
+      // Render Options
+      const optionsContainer = document.getElementById('q-options');
+      optionsContainer.innerHTML = '';
+
+      q.options.forEach((opt, idx) => {
+        const optBtn = document.createElement('button');
+        optBtn.className = `card-option w-full text-left p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 bg-white transition-all flex items-start justify-between group`;
+        
+        let subText = opt.desc ? `<p class="text-xs text-slate-500 mt-1">${opt.desc}</p>` : '';
+        
+        optBtn.innerHTML = `
+          <div class="pr-3">
+            <span class="font-bold text-slate-800 text-sm group-hover:text-blue-700 block">${opt.label}</span>
+            ${subText}
+          </div>
+          <div class="w-5 h-5 rounded-full border border-slate-300 group-hover:border-blue-600 group-hover:bg-blue-600 flex items-center justify-center text-white text-xs mt-0.5 transition-colors">
+            <i data-lucide="check" class="w-3 h-3 opacity-0 group-hover:opacity-100"></i>
+          </div>
+        `;
+
+        optBtn.onclick = () => handleOptionSelect(opt);
+        optionsContainer.appendChild(optBtn);
+      });
+
+      // Update Prev Button State
+      const prevBtn = document.getElementById('btn-prev');
+      if (currentStep === 1) {
+        prevBtn.disabled = true;
+      } else {
+        prevBtn.disabled = false;
+      }
+
+      // Refresh icons for dynamic content
+      lucide.createIcons();
+    }
+
+    function handleOptionSelect(opt) {
+      // Record answer according to current step
+      switch (currentStep) {
+        case 1:
+          userAnswers.level = opt.level;
+          userAnswers.gradeStr = opt.label;
+          break;
+        case 2:
+          userAnswers.objective = opt.value;
+          break;
+        case 3:
+          userAnswers.confidence = opt.value;
+          break;
+        case 4:
+          userAnswers.bottleneck = opt.value;
+          break;
+        case 5:
+          userAnswers.style = opt.value;
+          break;
+        case 6:
+          userAnswers.volume = opt.value;
+          break;
+        case 7:
+          userAnswers.answerKey = opt.value;
+          break;
+      }
+
+      if (currentStep < TOTAL_STEPS) {
+        currentStep++;
+        renderQuestion();
+      } else {
+        // All steps completed -> Show Loading then Result
+        showLoadingAndProcess();
+      }
+    }
+
+    function handlePrevStep() {
+      if (currentStep > 1) {
+        currentStep--;
+        renderQuestion();
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 5. RESULT DISPLAY & CUSTOMIZATION
+    // -------------------------------------------------------------
+    function showLoadingAndProcess() {
+      document.getElementById('screen-diagnostic').classList.add('hidden');
+      document.getElementById('screen-loading').classList.remove('hidden');
+
+      setTimeout(() => {
+        document.getElementById('screen-loading').classList.add('hidden');
+        renderFinalResult();
+        document.getElementById('screen-result').classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 1200);
+    }
+
+    function renderFinalResult() {
+      const rec = calculateRecommendation(userAnswers);
+
+      // Result Headline & Summary
+      document.getElementById('result-headline').innerText = `[${userAnswers.gradeStr}] 맞춤 교재 진단 솔루션`;
+      
+      let summaryStr = `${userAnswers.gradeStr} 학생의 진단 결과, 현재 실력 수준과 ${getObjectiveText(userAnswers.objective)} 목표를 고려할 때 `;
+      summaryStr += `가장 큰 학습 걸림돌인 '${getBottleneckText(userAnswers.bottleneck)}'을 해결할 수 있는 맞춤 조합으로 구성했습니다.`;
+      document.getElementById('result-summary-text').innerText = summaryStr;
+
+      // Result Tag Chips
+      const tagsContainer = document.getElementById('result-tags');
+      tagsContainer.innerHTML = `
+        <span class="text-xs bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full">${userAnswers.gradeStr}</span>
+        <span class="text-xs bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full">목표: ${getObjectiveText(userAnswers.objective)}</span>
+        <span class="text-xs bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full">취약점: ${getBottleneckText(userAnswers.bottleneck)}</span>
+      `;
+
+      // Main Book Fill
+      document.getElementById('main-book-badge').innerText = rec.mainBadge;
+      document.getElementById('main-book-title').innerText = rec.mainBook;
+      document.getElementById('main-book-reason').innerText = rec.mainReason;
+      document.getElementById('main-book-duration').innerText = rec.mainDuration;
+      document.getElementById('main-book-level').innerText = `난이도: ${rec.mainLevel}`;
+
+      // Sub Book Fill
+      document.getElementById('sub-book-badge').innerText = rec.subBadge;
+      document.getElementById('sub-book-title').innerText = rec.subBook;
+      document.getElementById('sub-book-reason').innerText = rec.subReason;
+      document.getElementById('sub-book-level').innerText = `난이도: ${rec.subLevel}`;
+
+      // Roadmap Step Customization based on Answer Key & Style
+      if (userAnswers.answerKey === 'fast') {
+        document.getElementById('roadmap-step3').innerText = "제공된 빠른 정답표로 채점 시간을 단축하고, 오답 해설만 발췌독하세요.";
+      } else if (userAnswers.answerKey === 'detailed') {
+        document.getElementById('roadmap-step3').innerText = "틀린 문제는 해설지의 줄글 설명과 다양한 접근 풀이법을 정독하세요.";
+      } else {
+        document.getElementById('roadmap-step3').innerText = "출제 의도와 킬러 문항 분석 팁을 참고하여 오답 노트 원인을 기록하세요.";
+      }
+
+      // Timestamp
+      const now = new Date();
+      document.getElementById('result-timestamp').innerText = `${now.getFullYear()}.${now.getMonth()+1}.${now.getDate()} 진단`;
+
+      lucide.createIcons();
+    }
+
+    // Helper text convertors
+    function getObjectiveText(code) {
+      switch(code) {
+        case 'preview': return '선행·예습';
+        case 'review': return '복습·내신';
+        case 'vacation': return '방학 개념완성';
+        case 'weakness': return '취약 보완';
+        default: return '학습';
+      }
+    }
+
+    function getBottleneckText(code) {
+      switch(code) {
+        case 'concept': return '개념 이해 부족';
+        case 'mistake': return '계산/실수 보완';
+        case 'speed': return '풀이 속도 향상';
+        case 'application': return '고난도 응용력';
+        default: return '실력 향상';
+      }
+    }
+
+    // Copy Results function
+    function copyResults() {
+      const mainTitle = document.getElementById('main-book-title').innerText;
+      const subTitle = document.getElementById('sub-book-title').innerText;
+      const summary = document.getElementById('result-summary-text').innerText;
+
+      const clipText = `[MathLab 수학 교재 진단 결과]\n\n● 대상: ${userAnswers.gradeStr}\n● 메인 교재: ${mainTitle}\n● 서브 교재: ${subTitle}\n\n● 진단 요약: ${summary}\n\nMathLab 엔진에서 맞춤 분석되었습니다.`;
+
+      // Copy using document.execCommand for iFrame compatibility
+      const dummy = document.createElement("textarea");
+      document.body.appendChild(dummy);
+      dummy.value = clipText;
+      dummy.select();
+      document.execCommand("copy");
+      document.body.removeChild(dummy);
+
+      alert("진단 결과가 클립보드에 복사되었습니다. KakaoTalk이나 메모장에 붙여넣기 하세요!");
+    }
+
+    // Initialize Lucide Icons on Load
+    window.onload = function() {
+      lucide.createIcons();
+    };
+  </script>
+</body>
+</html>
+```
